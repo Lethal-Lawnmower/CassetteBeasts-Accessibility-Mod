@@ -1,5 +1,15 @@
 # Cassette Beasts Accessibility Mod
 
+## DEVELOPMENT PAUSED
+
+**Development of this mod is currently on hold.** The developer is busy with other commitments and will resume work when time permits.
+
+**This mod is NOT in a playable state.** It exists purely for early testing and gathering feedback. Many core features are broken or missing. Please do not purchase Cassette Beasts expecting to play it accessibly with this mod - it is nowhere near ready for that.
+
+If you're interested in contributing or testing, feel free to explore the code, but understand that active development is paused for now.
+
+---
+
 ## IMPORTANT: EXTREMELY EARLY TESTING (v0.7.0)
 
 **This mod is in EXTREMELY EARLY TESTING and should NOT be considered a playable accessibility solution.**
