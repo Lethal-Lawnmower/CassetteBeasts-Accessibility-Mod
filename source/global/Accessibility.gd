@@ -474,44 +474,6 @@ func _announce_current_focus() -> void:
 		else:
 			speak(text, true)
 
-func _announce_battle_state() -> void:
-	# Find the Battle node if we're in a battle
-	var battle = _find_battle_node()
-	if battle == null:
-		speak("Not in battle", true)
-		return
-
-	var announcement = ""
-
-	# Get player team fighters
-	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
-
-	# Announce player team status
-	if teams.has(0):
-		var player_fighters = teams[0]
-		for fighter in player_fighters:
-			var name = _get_fighter_name(fighter)
-			var hp_info = _get_fighter_hp_string(fighter)
-			announcement += name + ": " + hp_info + ". "
-
-	# Announce enemy team status
-	if teams.has(1):
-		announcement += "Enemies: "
-		var enemy_fighters = teams[1]
-		for i in range(enemy_fighters.size()):
-			var fighter = enemy_fighters[i]
-			var name = _get_fighter_name(fighter)
-			var hp_info = _get_fighter_hp_string(fighter)
-			if i > 0:
-				announcement += ", "
-			announcement += name + " " + hp_info
-		announcement += ". "
-
-	if announcement.empty():
-		speak("No battle info available", true)
-	else:
-		speak(announcement, true)
-
 func _announce_player_health() -> void:
 	var battle = _get_current_battle()
 	if battle == null:

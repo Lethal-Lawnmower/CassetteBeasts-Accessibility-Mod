@@ -21,3 +21,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+
+# Release folder (uploaded to GitHub Releases, not repo)
+release/
