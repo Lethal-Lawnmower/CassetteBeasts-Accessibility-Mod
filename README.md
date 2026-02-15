@@ -103,11 +103,11 @@ We use direct PCK modification (same approach as the [Buckshot Roulette Accessib
 
 ## Installation
 
-### Option 1: Delta Patch (Easiest - Coming Soon)
+**Due to copyright considerations, we distribute only our code additions, not modified game files.**
 
-Download the release ZIP from the [Releases page](../../releases) and run `Install-Accessibility.bat`.
+See `patches/INSTALLATION_GUIDE.md` for complete step-by-step instructions.
 
-### Option 2: Manual Installation (For Developers)
+### Quick Overview
 
 #### Prerequisites
 
