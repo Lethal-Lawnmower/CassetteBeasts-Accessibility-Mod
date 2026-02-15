@@ -164,36 +164,36 @@ func _on_utterance_end(_utterance) -> void:
 	emit_signal("speech_finished")
 
 func _announce_startup() -> void:
-	speak("Accessibility mod loaded. Press F1 for help.", true)
+	speak("Accessibility mod loaded. H health, shift H enemy, T time, G gold, J A P, B bestiary.", true)
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed:
 		return
 
 	match event.scancode:
-		KEY_F1:
-			_announce_help()
+		KEY_H:
+			if event.shift:
+				_announce_enemy_health()
+			else:
+				_announce_player_health()
 			get_tree().set_input_as_handled()
-		KEY_F2:
-			_repeat_last()
+		KEY_T:
+			_announce_time_of_day()
 			get_tree().set_input_as_handled()
-		KEY_F3:
-			_announce_current_focus()
+		KEY_G:
+			_announce_money()
+			get_tree().set_input_as_handled()
+		KEY_J:
+			_announce_player_ap()
+			get_tree().set_input_as_handled()
+		KEY_B:
+			_announce_bestiary()
 			get_tree().set_input_as_handled()
 		KEY_F4:
 			toggle_enabled()
 			get_tree().set_input_as_handled()
 		KEY_F5:
-			_announce_battle_state()
-			get_tree().set_input_as_handled()
-		KEY_F6:
-			_announce_player_health()
-			get_tree().set_input_as_handled()
-		KEY_F7:
-			_announce_enemy_health()
-			get_tree().set_input_as_handled()
-		KEY_F8:
-			_announce_time_of_day()
+			_repeat_last()
 			get_tree().set_input_as_handled()
 
 # === CORE TTS ===
@@ -444,7 +444,7 @@ func _node_name_to_text(node_name: String) -> String:
 # === HOTKEY HANDLERS ===
 
 func _announce_help() -> void:
-	speak("F1 help, F2 repeat, F3 focus, F4 toggle, F5 battle state, F6 player health, F7 enemy health, F8 time of day", true)
+	speak("H health, shift H enemy, T time, G gold, J A P, B bestiary, F4 toggle, F5 repeat", true)
 
 func _repeat_last() -> void:
 	if _last_spoken.empty():
@@ -507,62 +507,59 @@ func _announce_battle_state() -> void:
 		speak(announcement, true)
 
 func _announce_player_health() -> void:
-	var battle = _find_battle_node()
+	var battle = _get_current_battle()
 	if battle == null:
 		speak("Not in battle", true)
 		return
 
-	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
-
-	if not teams.has(0) or teams[0].size() == 0:
-		speak("No player fighters", true)
-		return
-
+	var fighters = battle.get_fighters(false)
 	var announcement = ""
-	for fighter in teams[0]:
-		var name = _get_fighter_name(fighter)
-		var hp = 0
-		var max_hp = 0
-		if fighter.has_node("StatusNode") or "status" in fighter:
-			var status = fighter.status if "status" in fighter else fighter.get_node("StatusNode")
-			hp = status.hp if "hp" in status else 0
-			max_hp = status.max_hp if "max_hp" in status else 0
+	for fighter in fighters:
+		if fighter.team == 0:
+			var fname = fighter.get_general_name() if fighter.has_method("get_general_name") else "Fighter"
+			var hp = fighter.status.hp
+			var max_hp = fighter.status.max_hp
+			var pct = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
+			announcement += fname + ", " + str(pct) + " percent. "
 
-		var percent = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
-		announcement += name + ": " + str(hp) + " of " + str(max_hp) + " HP, " + str(percent) + " percent. "
-
-	speak(announcement, true)
+	if announcement.empty():
+		speak("No player fighters", true)
+	else:
+		speak(announcement, true)
 
 func _announce_enemy_health() -> void:
-	var battle = _find_battle_node()
+	var battle = _get_current_battle()
 	if battle == null:
 		speak("Not in battle", true)
 		return
 
-	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
-
-	if not teams.has(1) or teams[1].size() == 0:
-		speak("No enemies", true)
-		return
-
+	var fighters = battle.get_fighters(false)
 	var announcement = ""
-	for fighter in teams[1]:
-		var name = _get_fighter_name(fighter)
-		var hp = 0
-		var max_hp = 0
-		if fighter.has_node("StatusNode") or "status" in fighter:
-			var status = fighter.status if "status" in fighter else fighter.get_node("StatusNode")
-			hp = status.hp if "hp" in status else 0
-			max_hp = status.max_hp if "max_hp" in status else 0
+	for fighter in fighters:
+		if fighter.team != 0:
+			var fname = fighter.get_general_name() if fighter.has_method("get_general_name") else "Enemy"
+			var hp = fighter.status.hp
+			var max_hp = fighter.status.max_hp
+			var pct = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
+			announcement += fname + ", " + str(pct) + " percent. "
 
-		var percent = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
-		announcement += name + ": " + str(hp) + " of " + str(max_hp) + " HP, " + str(percent) + " percent. "
+	if announcement.empty():
+		speak("No enemies", true)
+	else:
+		speak(announcement, true)
 
-	speak(announcement, true)
+func _get_current_battle():
+	if SceneManager == null:
+		return null
+	var scene = SceneManager.current_scene
+	if scene == null:
+		return null
+	if scene.name == "Battle":
+		return scene
+	return null
 
 func _announce_time_of_day() -> void:
-	# Access the world time from SaveState
-	if not SaveState or not "world_time" in SaveState:
+	if SaveState == null:
 		speak("Time not available", true)
 		return
 
@@ -571,71 +568,119 @@ func _announce_time_of_day() -> void:
 		speak("Time not available", true)
 		return
 
-	var hour = world_time.get_hour() if world_time.has_method("get_hour") else (world_time.time * 24.0 if "time" in world_time else 0)
-	var is_night = world_time.is_night() if world_time.has_method("is_night") else (hour < 6 or hour >= 18)
+	var hour = world_time.get_hour()
+	var is_night = world_time.is_night()
+	var day = world_time.date
 
-	# Format time as HH:MM
 	var hours = int(hour)
 	var minutes = int((hour - hours) * 60)
-	var time_str = "%02d:%02d" % [hours, minutes]
-
 	var period = "night" if is_night else "day"
-	var day = world_time.date if "date" in world_time else 0
 
-	speak("Day " + str(day + 1) + ", " + time_str + ", " + period, true)
+	speak("Day " + str(day + 1) + ", " + str(hours) + " " + str(minutes) + ", " + period, true)
 
-func _find_battle_node():
-	# Try to find the Battle node in various ways
-	var root = get_tree().get_root()
+func _announce_money() -> void:
+	if SaveState == null:
+		speak("Money not available", true)
+		return
 
-	# Direct path check
-	var battle = root.get_node_or_null("Battle")
-	if battle:
-		return battle
+	var money = SaveState.money
+	speak(str(money) + " gold", true)
 
-	# Check SceneManager current scene
-	if SceneManager and "current_scene" in SceneManager:
-		var current = SceneManager.current_scene
-		if current and current.name == "Battle":
-			return current
-		if current and current.has_method("get_node_or_null"):
-			battle = current.get_node_or_null("Battle")
-			if battle:
-				return battle
+func _announce_player_ap() -> void:
+	var battle = _get_current_battle()
+	if battle == null:
+		speak("Not in battle", true)
+		return
 
-	# Search for any node named Battle
-	return _find_node_by_name(root, "Battle")
+	var fighters = battle.get_fighters(false)
+	var announcement = ""
+	for fighter in fighters:
+		if fighter.team == 0:
+			var fname = fighter.get_general_name() if fighter.has_method("get_general_name") else "Fighter"
+			var ap = fighter.status.ap if "ap" in fighter.status else 0
+			var max_ap = fighter.status.max_ap if "max_ap" in fighter.status else 0
+			announcement += fname + ", " + str(ap) + " of " + str(max_ap) + " A P. "
 
-func _find_node_by_name(node: Node, target_name: String):
-	if node.name == target_name:
-		return node
+	if announcement.empty():
+		speak("No player fighters", true)
+	else:
+		speak(announcement, true)
+
+func _announce_bestiary() -> void:
+	# Try to find the bestiary menu and get current species
+	var bestiary_menu = _find_bestiary_menu()
+	if bestiary_menu == null:
+		speak("Not in bestiary", true)
+		return
+
+	var species = bestiary_menu.species
+	if species == null:
+		speak("No species selected", true)
+		return
+
+	var announcement = ""
+
+	# Species name and number
+	var species_name = Loc.tr(species.name) if "name" in species else "Unknown"
+	var code = MonsterForms.get_bestiary_code(species)
+	announcement += code + ", " + species_name + ". "
+
+	# Types
+	var types = []
+	if species is MonsterForm:
+		types = MonsterForms.get_type_mapping(species)
+		if types.size() == 0 and "elemental_types" in species:
+			types = species.elemental_types
+	elif "elemental_types" in species:
+		types = species.elemental_types
+
+	if types.size() > 0:
+		var type_names = []
+		for etype in types:
+			if etype and "name" in etype:
+				type_names.append(Loc.tr(etype.name))
+		if type_names.size() > 0:
+			announcement += " and ".join(type_names) + " type. "
+
+	# Check if we have bio data
+	if species is MonsterForm:
+		if SaveState.species_collection.has_bestiary_data_requirement(species, 0):
+			# Bio is unlocked - read first bio
+			if species.bestiary_bios.size() > 0:
+				var bio_text = Loc.tr(species.bestiary_bios[0])
+				bio_text = _clean_text(bio_text)
+				announcement += bio_text + " "
+		else:
+			announcement += "Bio locked. Record to unlock. "
+
+		# Stats
+		var encountered = SaveState.species_collection.get_num_encountered(species)
+		var recorded = SaveState.species_collection.get_num_recorded(species)
+		var defeated = SaveState.species_collection.get_num_defeated(species)
+		announcement += "Encountered " + str(encountered) + ", recorded " + str(recorded) + ", defeated " + str(defeated) + ". "
+	elif species is FusionForm:
+		# Fusion
+		announcement += "Fusion of " + Loc.tr(species.base_form_1.name) + " and " + Loc.tr(species.base_form_2.name) + ". "
+		var formed = SaveState.species_collection.get_num_fusions_formed(species.base_form_1, species.base_form_2)
+		announcement += "Formed " + str(formed) + " times. "
+
+	speak(announcement, true)
+
+func _find_bestiary_menu():
+	# Search for BestiaryMenu in the scene tree
+	var root = get_tree().root
+	return _find_node_by_script(root, "BestiaryMenu")
+
+func _find_node_by_script(node: Node, script_name: String):
+	if node.get_script() != null:
+		var script_path = node.get_script().resource_path
+		if script_name in script_path:
+			return node
 	for child in node.get_children():
-		var found = _find_node_by_name(child, target_name)
-		if found:
-			return found
+		var result = _find_node_by_script(child, script_name)
+		if result != null:
+			return result
 	return null
-
-func _get_fighter_name(fighter) -> String:
-	if fighter.has_method("get_general_name"):
-		return fighter.get_general_name()
-	if "name" in fighter:
-		return fighter.name
-	return "Fighter"
-
-func _get_fighter_hp_string(fighter) -> String:
-	var hp = 0
-	var max_hp = 0
-
-	if "status" in fighter:
-		var status = fighter.status
-		hp = status.hp if "hp" in status else 0
-		max_hp = status.max_hp if "max_hp" in status else 0
-
-	if max_hp == 0:
-		return "unknown HP"
-
-	var percent = int((float(hp) / float(max_hp)) * 100)
-	return str(percent) + " percent HP"
 
 func toggle_enabled() -> void:
 	enabled = not enabled
