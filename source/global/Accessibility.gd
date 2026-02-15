@@ -164,7 +164,7 @@ func _on_utterance_end(_utterance) -> void:
 	emit_signal("speech_finished")
 
 func _announce_startup() -> void:
-	speak("Accessibility mod loaded. H health, shift H enemy, T time, G gold, J A P, B bestiary.", true)
+	speak("Accessibility mod loaded. H health, shift H enemy, T time, G gold, J A P, F fusion, R relationship, B bestiary.", true)
 
 func _input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed:
@@ -185,6 +185,12 @@ func _input(event: InputEvent) -> void:
 			get_tree().set_input_as_handled()
 		KEY_J:
 			_announce_player_ap()
+			get_tree().set_input_as_handled()
+		KEY_F:
+			_announce_fusion_meter()
+			get_tree().set_input_as_handled()
+		KEY_R:
+			_announce_relationship()
 			get_tree().set_input_as_handled()
 		KEY_B:
 			_announce_bestiary()
@@ -605,6 +611,51 @@ func _announce_player_ap() -> void:
 		speak("No player fighters", true)
 	else:
 		speak(announcement, true)
+
+func _announce_fusion_meter() -> void:
+	if SaveState == null or SaveState.party == null:
+		speak("Fusion meter not available", true)
+		return
+
+	var fusion_meter = SaveState.party.fusion_meter
+	if fusion_meter == null:
+		speak("Fusion meter not available", true)
+		return
+
+	var percent = int(fusion_meter.value.to_float() * 100)
+	if fusion_meter.is_full():
+		speak("Fusion meter full, ready to fuse!", true)
+	else:
+		speak("Fusion meter: " + str(percent) + " percent", true)
+
+func _announce_relationship() -> void:
+	if SaveState == null or SaveState.party == null:
+		speak("Relationship not available", true)
+		return
+
+	var partner = SaveState.party.get_partner()
+	if partner == null:
+		speak("No partner", true)
+		return
+
+	var partner_name = partner.get_character_name() if partner.has_method("get_character_name") else "Partner"
+	var relationship = partner.relationship if "relationship" in partner else null
+
+	if relationship == null:
+		speak(partner_name + ", no relationship data", true)
+		return
+
+	var level = relationship.level if "level" in relationship else 0
+	var max_level = 5
+	var can_level_up = relationship.can_level_up() if relationship.has_method("can_level_up") else false
+
+	var announcement = partner_name + ", relationship level " + str(level)
+	if level >= max_level:
+		announcement += ", max level"
+	elif can_level_up:
+		announcement += ", ready to level up"
+
+	speak(announcement, true)
 
 func _announce_bestiary() -> void:
 	# Try to find the bestiary menu and get current species

@@ -1,6 +1,6 @@
 # Cassette Beasts Accessibility Mod
 
-## IMPORTANT: EXTREMELY EARLY TESTING
+## IMPORTANT: EXTREMELY EARLY TESTING (v0.7.0)
 
 **This mod is in EXTREMELY EARLY TESTING and should NOT be considered a playable accessibility solution.**
 
@@ -37,6 +37,8 @@ We use direct PCK modification (same approach as the [Buckshot Roulette Accessib
 | **T** | Time of day (Day #, hour, minute, day/night) |
 | **G** | Gold/money amount |
 | **J** | Player AP in battle (monster name + current/max AP) |
+| **F** | Fusion meter percentage (or "Fusion ready!") |
+| **R** | Relationship level with current partner |
 | **B** | Bestiary details (when in bestiary menu - reads species, types, bio, stats) |
 | **F4** | Toggle accessibility on/off |
 | **F5** | Repeat last spoken text |
@@ -63,14 +65,28 @@ We use direct PCK modification (same approach as the [Buckshot Roulette Accessib
 - [x] G - Gold/money hotkey
 - [x] J - Player AP hotkey (in battle)
 
+### New in v0.7.0 (Needs Testing)
+
+- [ ] **F hotkey** - Fusion meter percentage
+- [ ] **R hotkey** - Relationship level with partner
+- [ ] **Recording chance** - Announces final record percentage when attempting to capture
+- [ ] **Fusion meter** - Auto-announces "Fusion ready!" when meter fills
+- [ ] **Damage numbers** - Announces damage dealt in battle
+- [ ] **Critical hits** - Announces "Critical hit!" with damage
+- [ ] **Healing** - Announces "Healed X" amounts
+- [ ] **AP changes** - Announces "gained/lost X AP" during battle
+- [ ] **Status effects** - Announces buff/debuff application
+- [ ] **Battle text toasts** - Recording failed, missed attacks, etc.
+- [ ] **Bootleg indicator** - Tapes announce if they're bootlegs
+- [ ] **Relationship info** - Party members announce relationship level + "ready to level up"
+
 ### Added But UNTESTED (Should Work)
 
-The following features have been implemented but **have not been fully tested yet**:
-
-- [ ] **Bestiary menu list navigation** - announces species code, name, and status (seen/recorded) when navigating
+- [ ] **Bestiary menu list navigation** - announces species code, name, and status (seen/recorded)
 - [ ] **B hotkey** - reads full bestiary entry details (types, bio text, encounter/record/defeat stats)
-- [ ] **Tape/Forms menu navigation** - announces tape name, species, types, HP%, broken status, grade when focused
+- [ ] **Tape/Forms menu navigation** - announces tape name, species, types, HP%, broken status, grade
 - [ ] **Beast info screen** (PartyTapeUI)
+- [ ] **Remaster menu** - announces what tape can remaster into
 
 ### What's Still Broken or Incomplete
 
@@ -79,23 +95,27 @@ The following features have been implemented but **have not been fully tested ye
 - [ ] Color names in character creation
 - [ ] Settings menu
 - [ ] Map/overworld navigation
-- [ ] Combat flow (turn order, damage numbers, status effects)
+- [ ] Combat flow (turn order)
 - [ ] Quest system updates
-- [ ] Recording/capture flow announcements
-- [ ] Fusion system announcements
 - [ ] **And many other menus/screens...**
 
 ---
 
-## Installation (For Testers/Developers)
+## Installation
 
-### Prerequisites
+### Option 1: Delta Patch (Easiest - Coming Soon)
+
+Download the release ZIP from the [Releases page](../../releases) and run `Install-Accessibility.bat`.
+
+### Option 2: Manual Installation (For Developers)
+
+#### Prerequisites
 
 - Cassette Beasts (Steam version)
 - [GodotPCKExplorer](https://github.com/DmitriySalnikov/GodotPCKExplorer) (for packing)
 - [GDRE Tools](https://github.com/bruvzg/gdsdecomp) (for decompiling, if needed)
 
-### Setup Steps
+#### Setup Steps
 
 1. **Backup your original game files**
    ```
@@ -164,14 +184,17 @@ CassetteBeasts-AccessibilityMod/
 │   │       └── GenericPopUp.gd  # Notification TTS
 │   ├── menus/
 │   │   ├── BaseMenu.gd          # Menu opening announcements
-│   │   ├── bestiary/            # NEW - Bestiary TTS
+│   │   ├── bestiary/            # Bestiary TTS
 │   │   │   ├── BestiaryListButton.gd
 │   │   │   └── BestiaryListButtonFusion.gd
+│   │   ├── evolution/
+│   │   │   └── EvolutionMenu.gd # Remaster TTS
 │   │   ├── give_tape/
 │   │   ├── text_input/
 │   │   ├── inventory/
 │   │   ├── party/
-│   │   │   └── TapeButton.gd    # Tape/forms menu TTS
+│   │   │   ├── TapeButton.gd    # Tape/forms menu TTS + bootleg
+│   │   │   └── PartyMemberButton.gd  # Relationship TTS
 │   │   ├── party_tape/
 │   │   ├── loot/
 │   │   └── gain_exp/
@@ -184,8 +207,11 @@ CassetteBeasts-AccessibilityMod/
 │           ├── MoveButton.gd
 │           ├── TargetButton.gd
 │           ├── FightOrderSubmenu.gd
+│           ├── BattleToast_Default.gd      # Damage/heal/AP TTS
+│           ├── BattleToast_RecordingChance.gd  # Recording % TTS
 │           └── cassette_player/
-│               └── CassettePlayer3D.gd
+│               ├── CassettePlayer3D.gd
+│               └── FusionMeter.gd  # "Fusion ready!" TTS
 ├── addons/
 │   └── godot-tts/               # TTS GDNative addon
 │       ├── TTS.gd
@@ -193,7 +219,8 @@ CassetteBeasts-AccessibilityMod/
 │       ├── nvdaControllerClient64.dll
 │       └── SAAPI64.dll
 └── docs/
-    └── ACCESSIBILITY_MOD_STATUS.md
+    ├── ACCESSIBILITY_MOD_STATUS.md
+    └── CLAUDE_SESSION_CONTEXT.md
 ```
 
 ---
@@ -222,6 +249,20 @@ When adding TTS to a new area:
 2. Use appropriate announce function or `speak()` directly
 3. Use `call_deferred()` if the UI isn't ready yet
 4. Don't interrupt important speech - use `speak(text, false)` for non-interrupting
+
+---
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 0.7.0 | 2026-02-15 | Added: Recording chance TTS, Fusion meter TTS + hotkey (F), Relationship hotkey (R), Damage/heal/AP announcements, Bootleg indicator, Battle text toasts |
+| 0.6.0 | 2026-02-14 | Major expansion: Battle UI, status effects, notifications, many menu improvements |
+| 0.5.0 | 2026-02-14 | Added FightOrderSubmenu TTS, runtime color detection |
+| 0.4.0 | 2026-02-14 | Added speech queue system, dialogue options, cassette obtained, naming screen |
+| 0.3.0 | 2026-02-14 | Replaced PowerShell with godot-tts native addon |
+| 0.2.0 | 2026-02-14 | Fixed TTS overlap, color names, dialogue timing, battle menu TTS |
+| 0.1.0 | 2026-02-13 | Initial implementation - basic TTS framework |
 
 ---
 

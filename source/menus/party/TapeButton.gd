@@ -142,6 +142,7 @@ func _on_focus_entered_accessibility():
 	var hp_percent = 100.0
 	var is_broken = false
 	var grade_value = 0
+	var is_bootleg = false
 
 	# Get form info
 	if form:
@@ -163,8 +164,39 @@ func _on_focus_entered_accessibility():
 	if tape.has_method("is_broken"):
 		is_broken = tape.is_broken()
 
+	# Check if bootleg
+	if tape.has_method("is_bootleg"):
+		is_bootleg = tape.is_bootleg()
+
 	# Get grade
 	if "grade" in tape:
 		grade_value = tape.grade
 
-	Accessibility.announce_tape_info(tape_name, species_name, type_names, hp_percent, is_broken, grade_value)
+	# Build announcement with bootleg info
+	var announcement = tape_name
+	if tape_name != species_name:
+		announcement += ", " + species_name
+
+	if is_bootleg:
+		announcement += ", bootleg"
+
+	# Announce types
+	if type_names.size() > 0:
+		announcement += ", "
+		for i in range(type_names.size()):
+			if i > 0:
+				announcement += " and "
+			announcement += type_names[i]
+		announcement += " type"
+
+	# Announce HP status
+	if is_broken:
+		announcement += ", broken"
+	elif hp_percent < 100:
+		announcement += ", " + str(int(hp_percent)) + " percent HP"
+
+	# Announce grade
+	if grade_value > 0:
+		announcement += ", grade " + str(grade_value)
+
+	Accessibility.speak(announcement, true)
