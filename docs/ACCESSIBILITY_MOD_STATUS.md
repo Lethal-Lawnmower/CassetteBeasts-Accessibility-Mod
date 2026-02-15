@@ -21,6 +21,21 @@ This mod adds text-to-speech (TTS) support to Cassette Beasts for visually impai
 
 ---
 
+## HOTKEYS
+
+| Key | Action |
+|-----|--------|
+| **H** | Announce player health (in battle) |
+| **Shift+H** | Announce enemy health (in battle) |
+| **T** | Announce time of day |
+| **G** | Announce gold/money |
+| **J** | Announce player AP (in battle) |
+| **B** | Announce bestiary info (when in bestiary) |
+| **F4** | Toggle accessibility on/off |
+| **F5** | Repeat last spoken text |
+
+---
+
 ## FILES MODIFIED
 
 ### Core Accessibility System
@@ -33,38 +48,60 @@ This mod adds text-to-speech (TTS) support to Cassette Beasts for visually impai
 ### UI/Menu TTS Hooks
 | File | Status | What it announces |
 |------|--------|-------------------|
-| `menus/BaseMenu.gd` | ✅ DONE | Menu name when opened |
-| `nodes/menus/AutoFocusButton.gd` | ✅ DONE | Button focus |
-| `nodes/menus/ArrowOptionList.gd` | ✅ DONE | Option selection with color support |
-| `nodes/message_dialog/MessageDialog.gd` | ✅ DONE | Dialogue text with speaker name |
-| `nodes/message_dialog/PassiveMessage.gd` | ✅ DONE | Passive/NPC dialogue |
-| `nodes/message_dialog/MenuDialog.gd` | ✅ DONE | Dialogue options (queued after dialogue finishes) |
-| `menus/give_tape/GiveTapeMenu.gd` | ✅ DONE | "Cassette obtained: [species name]" |
-| `menus/text_input/TextInputMenu.gd` | ✅ DONE | Naming screen announcement |
-| `menus/inventory/ItemButton.gd` | ✅ DONE | Item name, quantity, rarity on focus |
-| `menus/party/TapeButton.gd` | ✅ DONE | Tape info (name, species, types, HP, grade) |
-| `global/scene_manager/SceneManager.gd` | ✅ DONE | Area transition announcements |
+| `menus/BaseMenu.gd` | DONE | Menu name when opened |
+| `nodes/menus/ArrowOptionList.gd` | DONE | Option selection with color support |
+| `nodes/message_dialog/MessageDialog.gd` | DONE | Dialogue text with speaker name |
+| `nodes/message_dialog/MenuDialog.gd` | DONE | Dialogue options (queued after dialogue finishes) |
+| `menus/give_tape/GiveTapeMenu.gd` | DONE | "Cassette obtained: [species name]" |
+| `menus/text_input/TextInputMenu.gd` | DONE | Naming screen announcement |
+| `menus/inventory/ItemButton.gd` | DONE | Item name, quantity, rarity on focus |
+| `menus/inventory/InventoryTab.gd` | DONE | Tab name when switching tabs |
+| `menus/party/TapeButton.gd` | DONE | Tape info (name, species, types, HP, grade) |
+| `menus/party/PartyMemberButton.gd` | DONE | Character name, level, HP, tape info |
+| `menus/party/PartyActionButtons.gd` | DONE | Party menu action buttons |
+| `menus/bestiary/BestiaryListButton.gd` | DONE | Species code, name, encounter status |
+| `menus/bestiary/BestiaryListButtonFusion.gd` | DONE | Fusion species info |
+| `menus/loot/LootMenu.gd` | DONE | Items obtained summary |
+| `menus/gain_exp/GainExpMenu.gd` | DONE | EXP gained, level ups, grade ups |
+| `menus/type_chart/TypeChart.gd` | DONE | Type reactions (buff/debuff/transmutation) |
+| `menus/noticeboard/NoticeboardQuestButton.gd` | DONE | Quest name, description, status |
+| `menus/ranger_stamp_card/StampSlot.gd` | DONE | Ranger captain name, defeated status |
+| `menus/sticker_fusion/StickerFusionAttributeButton.gd` | DONE | Attribute name, compatibility |
+| `menus/camping/CampingMenu.gd` | DONE | Button names, rest cost |
+| `menus/stat_adjust/StatSlider.gd` | DONE | Stat name, value, adjustment info |
+| `menus/net_multiplayer/NetPlayerButton.gd` | DONE | Player name for online play |
+| `menus/gauntlet/GauntletDifficultyMenu.gd` | DONE | Difficulty options |
+| `menus/raid/RaidInfoPanel.gd` | DONE | Raid boss name, level, type, subtitle |
+| `menus/spooky_dialog/SpookyDialog.gd` | DONE | Spooky dialog text |
+| `menus/illustration/Illustration.gd` | DONE | Illustration description |
 
 ### Battle UI TTS Hooks
 | File | Status | What it announces |
 |------|--------|-------------------|
-| `battle/ui/cassette_player/CassettePlayer3D.gd` | ✅ DONE | Main battle menu buttons (Fight, Forms, Items, Flee, Fuse) |
-| `battle/ui/MoveButton.gd` | ✅ DONE | Move name, AP cost, type, status |
-| `battle/ui/TargetButton.gd` | ✅ DONE | Target name, ally/enemy |
-| `battle/ui/FightOrderSubmenu.gd` | ✅ DONE | Move list with explicit focus handler |
-| `battle/ui/BattleToast_Default.gd` | ✅ DONE | Damage/status announcements |
-| `battle/BattleController.gd` | ✅ DONE | Battle action announcements |
+| `battle/ui/cassette_player/CassettePlayer3D.gd` | DONE | Main battle menu buttons (Fight, Forms, Items, Flee, Fuse) |
+| `battle/ui/cassette_player/CassetteButton.gd` | DONE | 3D cassette button names |
+| `battle/ui/MoveButton.gd` | DONE | Move name, AP cost, type, status |
+| `battle/ui/TargetButton.gd` | DONE | Target name, ally/enemy |
+| `battle/ui/FightOrderSubmenu.gd` | DONE | Move list with description, AP, type, power |
+| `battle/ui/TargetOrderSubmenu.gd` | DONE | Target selection with ally/enemy indicator |
+| `battle/ui/StatusEffectIconNode.gd` | DONE | Status effect name, turns remaining, description |
+| `battle/ui/FusionLabelBanner.gd` | DONE | Fusion name when fusion occurs |
+| `battle/ui/TurnTitleBanner.gd` | DONE | Turn action (move used) and failures |
+| `battle/ui/VictorySplash.gd` | DONE | "Victory!" announcement |
+
+### Notification Banners
+| File | Status | What it announces |
+|------|--------|-------------------|
+| `menus/boss_title/TitleBanner.gd` | DONE | Boss title and subtitle |
+| `menus/new_quest/NewQuestBanner.gd` | DONE | New quest name |
+| `menus/quest_complete/QuestCompleteBanner.gd` | DONE | Quest completed |
+| `menus/new_ability/NewAbilityBanner.gd` | DONE | New ability unlocked |
+| `menus/new_partner/NewPartnerBanner.gd` | DONE | New partner joined |
+| `menus/relationship_up/RelationshipUpBanner.gd` | DONE | Relationship level up |
 
 ---
 
 ## FEATURES IMPLEMENTED
-
-### Hotkeys (F-keys)
-- **F1** - Help (lists available hotkeys)
-- **F2** - Repeat last spoken text
-- **F3** - Announce current focus
-- **F4** - Toggle accessibility on/off
-- **F5** - Announce battle state (placeholder - needs real implementation)
 
 ### Speech Queue System
 - Queues speech to play after dialogue finishes
@@ -76,40 +113,21 @@ This mod adds text-to-speech (TTS) support to Cassette Beasts for visually impai
 - `COLOR_NAMES` dictionary for predefined color names
 - `get_color_name_from_palette()` - Runtime color detection from palette.png
 - `_describe_color()` - HSV-based color description
-- **STATUS:** Colors may still be incorrect - needs palette verification
 
 ---
 
 ## KNOWN ISSUES / TODO
 
-### Critical - Not Working
-- [ ] **Battle moves not being read** - FightOrderSubmenu has TTS code but it's not firing
-  - Possible cause: Accessibility singleton not available when buttons created
-  - Needs debugging/alternative approach
-
-- [ ] **Color names incorrect** - User reports colors described wrongly
-  - Palette index mapping may be wrong
-  - Consider removing color name feature or doing thorough palette analysis
+### Needs Testing
+- [ ] Test all new TTS additions in-game
+- [ ] Verify bestiary menu TTS works correctly
+- [ ] Test battle target selection TTS
+- [ ] Test all notification banners
 
 ### Needs Implementation
-- [ ] **Experience/Level Up Menu** (`menus/gain_exp/GainExpMenu.gd`)
-  - Announce EXP gained
-  - Announce level ups
-  - Announce grade ups for tapes
-
-- [ ] **Loot/Pickup Notifications** (`menus/loot/LootMenu.gd`)
-  - Announce items obtained when menu opens
-  - Already has ItemButton TTS, may need menu-level announcement
-
-- [ ] **Beast Naming/Info Screen** (`menus/party_tape/PartyTapeUI.gd`)
-  - Announce tape info when viewing
-  - Announce options (Rename, Stickers, etc.)
-
-- [ ] **Notification Popups** (`global/notifications/GenericPopUp.gd`)
-  - Announce popup content when shown
-
-- [ ] **Battle State (F5)** - Currently just says "Battle check"
-  - Should announce current HP, AP, status effects, etc.
+- [ ] **Character Creation** - Color/part options could use better TTS
+- [ ] **Map/Pause Menu** - Map marker TTS
+- [ ] **More multiplayer menus** - Trade, battle request, etc.
 
 ### Polish/Enhancement
 - [ ] Test with actual screen readers (NVDA, JAWS)
@@ -144,19 +162,6 @@ announce_item(item_name: String, amount: int, equipped: bool, rarity: String)
 announce_tape_info(tape_name, species_name, types, hp_percent, is_broken, grade)
 ```
 
-### Color Functions
-```gdscript
-get_color_name_from_palette(ramp_index: int) -> String  # Runtime color lookup
-_describe_color(color: Color) -> String  # HSV-based description
-```
-
-### State
-```gdscript
-var enabled: bool  # Toggle all TTS
-var speech_rate: float  # 0.1 to 2.0
-var debug_logging: bool  # Print TTS to console
-```
-
 ---
 
 ## BUILD/REPACK COMMANDS
@@ -173,24 +178,6 @@ Copy-Item "C:\CassetteBeasts-Decompiled\addons\godot-tts\target\release\*.dll" "
 
 ---
 
-## TROUBLESHOOTING
-
-### TTS Not Working
-1. Check if DLLs are in game folder (not just in PCK)
-2. Check console for "[Accessibility]" messages
-3. Press F4 to toggle, F1 for help
-
-### Screen Reader Not Detected
-- godot-tts may fall back to SAPI
-- Check if screen reader is running before launching game
-
-### Moves/Buttons Not Announcing
-- Likely signal connection issue
-- Add debug prints to `_on_focus_entered_accessibility` functions
-- Check if `Accessibility` singleton is available (`if Accessibility:`)
-
----
-
 ## VERSION HISTORY
 
 | Version | Date | Changes |
@@ -198,17 +185,16 @@ Copy-Item "C:\CassetteBeasts-Decompiled\addons\godot-tts\target\release\*.dll" "
 | 0.1.0 | 2026-02-13 | Initial implementation - basic TTS framework |
 | 0.2.0 | 2026-02-14 | Fixed TTS overlap, color names, dialogue timing, battle menu TTS |
 | 0.3.0 | 2026-02-14 | Replaced PowerShell with godot-tts native addon |
-| 0.4.0 | 2026-02-14 | Added speech queue system, dialogue options, cassette obtained, naming screen, item/tape buttons |
-| 0.5.0 | 2026-02-14 | Added FightOrderSubmenu TTS (not working), runtime color detection |
+| 0.4.0 | 2026-02-14 | Added speech queue system, dialogue options, cassette obtained, naming screen |
+| 0.5.0 | 2026-02-14 | Added FightOrderSubmenu TTS, runtime color detection |
+| 0.6.0 | 2026-02-14 | **Major expansion:** Changed hotkeys (H/Shift+H/T/G/J/B), added TTS to: StatusEffects, CassetteButton, PartyActionButtons, PartyMemberButton, TypeChart, Noticeboard, StampSlot, StickerFusion, CampingMenu, StatSlider, NetPlayerButton, GauntletDifficulty, RaidInfo, SpookyDialog, Illustration, TargetOrderSubmenu, FusionLabelBanner, TurnTitleBanner |
 
 ---
 
 ## NEXT STEPS FOR DEVELOPMENT
 
-1. **Debug battle moves TTS** - Add logging to find why focus signals aren't working
-2. **Add GainExpMenu TTS** - Level up/EXP announcements
-3. **Add LootMenu announcement** - Summarize items on open
-4. **Add PartyTapeUI TTS** - Beast info screen
-5. **Add GenericPopUp TTS** - Notification announcements
-6. **Fix colors** - Either remove feature or properly map palette
-7. **Test with screen readers** - NVDA, JAWS verification
+1. **Repack and test** - Rebuild PCK with all new changes
+2. **Character creation** - Improve part/color option announcements
+3. **Map navigation** - Add TTS to map markers
+4. **Multiplayer menus** - Trade/battle request screens
+5. **Test with screen readers** - NVDA, JAWS verification

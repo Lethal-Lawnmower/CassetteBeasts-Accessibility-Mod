@@ -60,8 +60,60 @@ func _process(_delta):
 			var move = focus.get("move")
 			if move != null:
 				update_info_panel(move)
+				_speak_move(move, focus)
 		else:
 			update_info_panel(null)
+
+func _speak_move(move, button):
+	if not Accessibility:
+		return
+
+	var move_name = Loc.tr(move.name)
+	var announcement = move_name
+
+	# AP cost
+	if not move.is_passive_only:
+		announcement += ", " + str(move.cost) + " A P"
+	else:
+		announcement += ", passive"
+
+	# Type
+	if move.elemental_types.size() > 0 and move.elemental_types[0]:
+		announcement += ", " + Loc.tr(move.elemental_types[0].name)
+
+	# Category (melee, ranged, status)
+	if move.category_name:
+		announcement += ", " + Loc.tr(move.category_name)
+
+	# Power
+	if move.power > 0:
+		announcement += ", power " + str(move.power)
+
+	# Accuracy (only if not 100%)
+	if move.accuracy < 100:
+		announcement += ", " + str(move.accuracy) + " percent accuracy"
+
+	# Hits
+	var min_hits = move.min_hits if "min_hits" in move and move.min_hits else 1
+	var max_hits = move.max_hits if "max_hits" in move and move.max_hits else 1
+	if min_hits > 1 or max_hits > 1:
+		if min_hits == max_hits:
+			announcement += ", " + str(min_hits) + " hits"
+		else:
+			announcement += ", " + str(min_hits) + " to " + str(max_hits) + " hits"
+
+	# Description
+	if move.description and move.description != "":
+		announcement += ". " + Loc.tr(move.description)
+
+	# Disabled status
+	if button.disabled:
+		if move.is_passive_only:
+			announcement += ". Cannot use"
+		elif fighter and move.cost > fighter.status.ap:
+			announcement += ". Not enough A P"
+
+	Accessibility.speak(announcement, true)
 	
 	
 	
