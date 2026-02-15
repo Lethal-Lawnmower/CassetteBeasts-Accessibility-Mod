@@ -186,6 +186,15 @@ func _input(event: InputEvent) -> void:
 		KEY_F5:
 			_announce_battle_state()
 			get_tree().set_input_as_handled()
+		KEY_F6:
+			_announce_player_health()
+			get_tree().set_input_as_handled()
+		KEY_F7:
+			_announce_enemy_health()
+			get_tree().set_input_as_handled()
+		KEY_F8:
+			_announce_time_of_day()
+			get_tree().set_input_as_handled()
 
 # === CORE TTS ===
 
@@ -435,7 +444,7 @@ func _node_name_to_text(node_name: String) -> String:
 # === HOTKEY HANDLERS ===
 
 func _announce_help() -> void:
-	speak("F1 help, F2 repeat, F3 focus, F4 toggle, F5 battle", true)
+	speak("F1 help, F2 repeat, F3 focus, F4 toggle, F5 battle state, F6 player health, F7 enemy health, F8 time of day", true)
 
 func _repeat_last() -> void:
 	if _last_spoken.empty():
@@ -460,7 +469,173 @@ func _announce_current_focus() -> void:
 			speak(text, true)
 
 func _announce_battle_state() -> void:
-	speak("Battle check", true)
+	# Find the Battle node if we're in a battle
+	var battle = _find_battle_node()
+	if battle == null:
+		speak("Not in battle", true)
+		return
+
+	var announcement = ""
+
+	# Get player team fighters
+	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
+
+	# Announce player team status
+	if teams.has(0):
+		var player_fighters = teams[0]
+		for fighter in player_fighters:
+			var name = _get_fighter_name(fighter)
+			var hp_info = _get_fighter_hp_string(fighter)
+			announcement += name + ": " + hp_info + ". "
+
+	# Announce enemy team status
+	if teams.has(1):
+		announcement += "Enemies: "
+		var enemy_fighters = teams[1]
+		for i in range(enemy_fighters.size()):
+			var fighter = enemy_fighters[i]
+			var name = _get_fighter_name(fighter)
+			var hp_info = _get_fighter_hp_string(fighter)
+			if i > 0:
+				announcement += ", "
+			announcement += name + " " + hp_info
+		announcement += ". "
+
+	if announcement.empty():
+		speak("No battle info available", true)
+	else:
+		speak(announcement, true)
+
+func _announce_player_health() -> void:
+	var battle = _find_battle_node()
+	if battle == null:
+		speak("Not in battle", true)
+		return
+
+	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
+
+	if not teams.has(0) or teams[0].size() == 0:
+		speak("No player fighters", true)
+		return
+
+	var announcement = ""
+	for fighter in teams[0]:
+		var name = _get_fighter_name(fighter)
+		var hp = 0
+		var max_hp = 0
+		if fighter.has_node("StatusNode") or "status" in fighter:
+			var status = fighter.status if "status" in fighter else fighter.get_node("StatusNode")
+			hp = status.hp if "hp" in status else 0
+			max_hp = status.max_hp if "max_hp" in status else 0
+
+		var percent = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
+		announcement += name + ": " + str(hp) + " of " + str(max_hp) + " HP, " + str(percent) + " percent. "
+
+	speak(announcement, true)
+
+func _announce_enemy_health() -> void:
+	var battle = _find_battle_node()
+	if battle == null:
+		speak("Not in battle", true)
+		return
+
+	var teams = battle.get_teams(false, false) if battle.has_method("get_teams") else {}
+
+	if not teams.has(1) or teams[1].size() == 0:
+		speak("No enemies", true)
+		return
+
+	var announcement = ""
+	for fighter in teams[1]:
+		var name = _get_fighter_name(fighter)
+		var hp = 0
+		var max_hp = 0
+		if fighter.has_node("StatusNode") or "status" in fighter:
+			var status = fighter.status if "status" in fighter else fighter.get_node("StatusNode")
+			hp = status.hp if "hp" in status else 0
+			max_hp = status.max_hp if "max_hp" in status else 0
+
+		var percent = int((float(hp) / float(max_hp)) * 100) if max_hp > 0 else 0
+		announcement += name + ": " + str(hp) + " of " + str(max_hp) + " HP, " + str(percent) + " percent. "
+
+	speak(announcement, true)
+
+func _announce_time_of_day() -> void:
+	# Access the world time from SaveState
+	if not SaveState or not "world_time" in SaveState:
+		speak("Time not available", true)
+		return
+
+	var world_time = SaveState.world_time
+	if world_time == null:
+		speak("Time not available", true)
+		return
+
+	var hour = world_time.get_hour() if world_time.has_method("get_hour") else (world_time.time * 24.0 if "time" in world_time else 0)
+	var is_night = world_time.is_night() if world_time.has_method("is_night") else (hour < 6 or hour >= 18)
+
+	# Format time as HH:MM
+	var hours = int(hour)
+	var minutes = int((hour - hours) * 60)
+	var time_str = "%02d:%02d" % [hours, minutes]
+
+	var period = "night" if is_night else "day"
+	var day = world_time.date if "date" in world_time else 0
+
+	speak("Day " + str(day + 1) + ", " + time_str + ", " + period, true)
+
+func _find_battle_node():
+	# Try to find the Battle node in various ways
+	var root = get_tree().get_root()
+
+	# Direct path check
+	var battle = root.get_node_or_null("Battle")
+	if battle:
+		return battle
+
+	# Check SceneManager current scene
+	if SceneManager and "current_scene" in SceneManager:
+		var current = SceneManager.current_scene
+		if current and current.name == "Battle":
+			return current
+		if current and current.has_method("get_node_or_null"):
+			battle = current.get_node_or_null("Battle")
+			if battle:
+				return battle
+
+	# Search for any node named Battle
+	return _find_node_by_name(root, "Battle")
+
+func _find_node_by_name(node: Node, target_name: String):
+	if node.name == target_name:
+		return node
+	for child in node.get_children():
+		var found = _find_node_by_name(child, target_name)
+		if found:
+			return found
+	return null
+
+func _get_fighter_name(fighter) -> String:
+	if fighter.has_method("get_general_name"):
+		return fighter.get_general_name()
+	if "name" in fighter:
+		return fighter.name
+	return "Fighter"
+
+func _get_fighter_hp_string(fighter) -> String:
+	var hp = 0
+	var max_hp = 0
+
+	if "status" in fighter:
+		var status = fighter.status
+		hp = status.hp if "hp" in status else 0
+		max_hp = status.max_hp if "max_hp" in status else 0
+
+	if max_hp == 0:
+		return "unknown HP"
+
+	var percent = int((float(hp) / float(max_hp)) * 100)
+	return str(percent) + " percent HP"
 
 func toggle_enabled() -> void:
 	enabled = not enabled

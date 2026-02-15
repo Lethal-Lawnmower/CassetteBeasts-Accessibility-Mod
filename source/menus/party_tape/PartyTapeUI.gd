@@ -192,6 +192,9 @@ func _on_MoveButton_focus_entered(button):
 	move_info_panel.move = button.move
 	move_info_panel.rect_min_size.y = max(move_info_panel.rect_min_size.y, move_info_panel.rect_size.y)
 
+	# Accessibility: Announce move details when focused
+	_announce_sticker_focus(button)
+
 func _on_MoveButton_pressed(button):
 	current_sticker_button = button
 	if battle or is_trade:
@@ -353,6 +356,57 @@ func _on_RenameButton_pressed():
 		tape.set_name_override(new_name)
 		update_ui()
 	rename_btn.grab_focus()
+
+func _announce_sticker_focus(button):
+	if not Accessibility:
+		return
+
+	var move = button.move if button else null
+	var index = button.get_index() if button else 0
+	var total = stickers.get_child_count()
+
+	if move == null:
+		Accessibility.speak("Empty sticker slot, " + str(index + 1) + " of " + str(total), true)
+		return
+
+	var move_name = Loc.tr(move.name) if "name" in move else "Unknown move"
+	var announcement = move_name
+
+	# Add AP cost if not passive
+	if "is_passive_only" in move and not move.is_passive_only:
+		var cost = move.cost if "cost" in move else 0
+		announcement += ", " + str(cost) + " A P"
+	elif "is_passive_only" in move and move.is_passive_only:
+		announcement += ", passive"
+
+	# Add type
+	if "elemental_types" in move and move.elemental_types.size() > 0:
+		var type_name = move.elemental_types[0].name if move.elemental_types[0] else ""
+		if type_name != "":
+			announcement += ", " + Loc.tr(type_name) + " type"
+
+	# Add category (physical, ranged, status)
+	if "category" in move:
+		match move.category:
+			0:  # PHYSICAL
+				announcement += ", melee"
+			1:  # RANGED
+				announcement += ", ranged"
+			2:  # STATUS
+				announcement += ", status"
+
+	# Add power if available
+	if "power" in move and move.power > 0:
+		announcement += ", power " + str(move.power)
+
+	# Add accuracy
+	if "accuracy" in move and move.accuracy < 100:
+		announcement += ", " + str(move.accuracy) + " percent accuracy"
+
+	# Position
+	announcement += ", " + str(index + 1) + " of " + str(total)
+
+	Accessibility.speak(announcement, true)
 
 func _announce_tape_info():
 	if not Accessibility or tape == null:
