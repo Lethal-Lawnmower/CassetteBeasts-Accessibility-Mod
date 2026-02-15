@@ -2,7 +2,9 @@
 
 ## DEVELOPMENT PAUSED
 
-**Development of this mod is currently on hold.** The developer is busy with other commitments and will resume work when time permits.
+**Development of this mod is currently on hold.** The developer is busy with other commitments, and the weekly Claude AI usage limit has been completely exhausted working on this mod.
+
+I'll be upgrading my Claude plan soon, so there won't be long stretches between development sessions going forward.
 
 **This mod is NOT in a playable state.** It exists purely for early testing and gathering feedback. Many core features are broken or missing. Please do not purchase Cassette Beasts expecting to play it accessibly with this mod - it is nowhere near ready for that.
 
